@@ -1,0 +1,137 @@
+﻿@{
+    ViewData["Title"] = "AI Document Assistant";
+}
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- Ingestion -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Add Document</h5>
+                    <textarea id="docText" class="form-control" rows="10"
+                              placeholder="Paste document text..."></textarea>
+                    <button id="btnUpload"
+                            class="btn btn-primary w-100 mt-3">
+                        Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Query -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Ask a Question</h5>
+
+                    <div id="chat"
+                         class="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
+                         style="background:#f8f9fa"></div>
+
+                    <div class="input-group">
+                        <input id="question"
+                               class="form-control"
+                               placeholder="Ask something about your documents..." />
+                        <button id="btnAsk" class="btn btn-success">Ask</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const overlay = $('#loadingOverlay');
+
+    function showLoading() {
+        overlay.removeClass('d-none');
+    }
+
+    function hideLoading() {
+        overlay.addClass('d-none');
+    }
+
+    function append(sender, text) {
+        const chat = $('#chat');
+        chat.append(`
+            <div class="mb-3">
+                <strong>${sender}:</strong>
+                <pre class="mt-1 mb-0">${escapeHtml(text)}</pre>
+            </div>
+        `);
+        chat.scrollTop(chat[0].scrollHeight);
+    }
+
+    function escapeHtml(text) {
+        return $('<div/>').text(text).html();
+    }
+
+    // -------------------------
+    // Add Document
+    // -------------------------
+    $('#btnUpload').on('click', function () {
+        const content = $('#docText').val().trim();
+        if (!content) return;
+
+        showLoading();
+        $(this).prop('disabled', true);
+        $.ajax({
+            url: '/AiDocuments/AddDocument',
+            type: 'POST',
+            data: { content },
+            dataType: 'json',
+            success: function (result) {
+                // result === CustomResult (deserialized JSON)
+                console.log(result);
+                if (result.isSuccess === true) {
+                    alert(result.message);
+                    $('#docText').val('');
+                } else {
+                    alert('Failed: ' + result.message);
+                }
+            },
+            error: function () {
+                alert('Upload failed');
+            },
+            complete: function () {
+                hideLoading();
+                $('#btnUpload').prop('disabled', false);
+            }
+        });
+
+    });
+
+    // -------------------------
+    // Query Documents
+    // -------------------------
+    $('#btnAsk').on('click', function () {
+        const q = $('#question').val().trim();
+        if (!q) return;
+
+        append('You', q);
+        $('#question').val('');
+        showLoading();
+        $(this).prop('disabled', true);
+
+        $.ajax({
+            url: '/AiDocuments/Query',
+            type: 'POST',
+            data: { question: q },
+            dataType: 'text',   
+            success: function (answer) {
+                // answer = long plain text
+                append('Document Assistant', answer);
+            },
+            error: function () {
+                append('System', 'Error querying documents.');
+            },
+            complete: function () {
+                hideLoading();
+                $('#btnAsk').prop('disabled', false);
+            }
+        });
+    });
+</script>
