@@ -21,23 +21,59 @@ body {
   margin-bottom: 60px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+.chat-card {
+    height: 75vh;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    background: #f8f9fa;
 }
-/* Ensure long text never overflows inputs */
-input[type="text"],
-textarea {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+
+.chat-input {
+    position: sticky;
+    bottom: 0;
 }
-#chat pre {
-    white-space: pre-wrap; /* Keep formatting but allow wrapping */
-    word-break: break-word; /* Break long words if needed */
-    overflow-wrap: anywhere; /* Prevent overflow on long tokens */
+
+.chat-bubble {
+    margin-bottom: 15px;
+}
+
+    .chat-bubble.user {
+        text-align: right;
+    }
+
+    .chat-bubble.ai {
+        text-align: left;
+    }
+
+    .chat-bubble pre {
+        display: inline-block;
+        padding: 10px 14px;
+        border-radius: 12px;
+        max-width: 85%;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        margin: 0;
+    }
+
+    .chat-bubble.user pre {
+        background: #d1e7dd;
+    }
+
+    .chat-bubble.ai pre {
+        background: #fff;
+        border: 1px solid #dee2e6;
+    }
+
+#loadingOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
 }
